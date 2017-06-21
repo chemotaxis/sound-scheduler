@@ -92,7 +92,7 @@ boilerplate = '''
         <style>
             @import url("https://fonts.googleapis.com/css?family=Overpass");
             body {
-                font-family: "Overpass", monospace;
+                font-family: "Overpass", sans-serif;
                 font-size: 12pt;
             }
             table {
