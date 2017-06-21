@@ -67,7 +67,10 @@ def tags(name, table, indent_level=0):
     table.append('{}</{}>'.format(indent, name))
 
 def table(data, head=[]):
-    """data is a list of lists"""
+    """Generate an html table
+    data is a list of lists
+    output is a list of strings representing html
+    """
     indent = '\t'
     table = []
     with tags('table', table):
