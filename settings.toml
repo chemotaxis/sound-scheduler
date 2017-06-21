@@ -1,0 +1,8 @@
+shifts = ["Sun AM", "Sun PM", "Wed"]
+
+[operators]
+
+"Ethan" = ["Sun AM", "Wed"]
+"Kurt" = ["Sun AM", "Sun PM", "Wed"]
+"Troy" = ["Sun PM", "Wed"]
+"Bill" = ["Sun PM", "Wed"]
