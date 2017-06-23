@@ -17,7 +17,7 @@ class Operators:
 
     def __init__(self, avail):
         self.availability = self.transform_avail(avail)
-        self.names = avail.keys()
+        self.names = list(avail.keys())
 
     def __len__(self): return len(self.names)
 
