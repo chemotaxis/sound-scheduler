@@ -1,5 +1,7 @@
 import datetime
 import random as r
+import bisect
+import itertools
 import collections
 from collections import Counter
 from contextlib import contextmanager
@@ -43,21 +45,40 @@ def sound_shifts(start_date, end_date):
 def sound_scheduler(operators, start_date, end_date):
     """Randomly assign operators to a shift"""
 
-    lo, hi, n = 0, 10, 0
-    while hi-lo > 2 and n != len(operators):
-        operator_counts = Counter()
-        schedule = []
-        for date, shift in sound_shifts(start_date, end_date):
-            sound_person = r.choice(operators.availability[shift])
-            operator_counts.update([sound_person])
+    counts = Counter()
+    rel_weights = Counter(operators.names)
+    schedule = []
+    for date, shift in sound_shifts(start_date, end_date):
+        pop = operators.availability[shift]
+        weights = [rel_weights[name] for name in pop]
 
             line = [date.strftime('%b %d'), shift, sound_person]
             schedule.append(line)
 
-        n = operator_counts.values()
-        lo, hi = min(n), max(n)
+        sound_person = choices(pop, weights)
+        counts.update((sound_person,))
 
-    return operator_counts, schedule
+
+
+        diff = set(operators.names) - set((sound_person,))
+        for name in diff:
+            rel_weights[name] *= 10
+
+        lo = min(rel_weights.values())
+        for k in rel_weights.keys():
+            rel_weights[k] //= lo
+
+        line = [date.strftime('%b %d'), shift, sound_person]
+        schedule.append(line)
+
+
+    return counts, schedule
+
+def choices(population, rel_weights):
+    cum_weights = list(itertools.accumulate(rel_weights))
+    x = r.random() * cum_weights[-1]
+    ix = bisect.bisect(cum_weights, x)
+    return population[ix]
 
 @contextmanager
 def tags(name, table, indent_level=0):
