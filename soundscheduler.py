@@ -37,24 +37,32 @@ class Operators:
 Diagnostic = namedtuple('Diagnostic',
     ['counts', 'rel_weights', 'shift_counts', 'shift_weights'])
 
-def sound_shifts(start_date, end_date):
+TimeData = namedtuple('TimeData', ['first_date', 'last_date', 'shifts'])
+
+def sound_shifts(time_data):
     """An iterator that emits operating shifts for a given date range"""
-    for day in range(start_date.toordinal(), end_date.toordinal()+1):
-        full_date = datetime.date.fromordinal(day)
+
+    def dates(first, last):
+        first_num, last_num = first.toordinal(), last.toordinal()
+        for i in range(first_num, last_num+1):
+            yield datetime.date.fromordinal(i)
+
+    for full_date in dates(time_data.first_date, time_data.last_date):
         weekday = full_date.strftime('%A')
 
-        if weekday == 'Sunday':
-            yield full_date, 'Sun AM'
-            yield full_date, 'Sun PM'
-        elif weekday == 'Wednesday':
-            yield full_date, 'Wed'
+        try:
+            shifts = time_data.shifts[weekday]
+        except KeyError: shifts = []
 
-def sound_scheduler(operators, start_date, end_date):
+        for shift in shifts:
+            yield full_date, shift
+
+def sound_scheduler(operators, time_data):
     """Randomly assign operators to a shift"""
 
     counts, rel_weights = Counter(), Counter(operators.names)
     schedule, diagnostics = [], []
-    for date, shift in sound_shifts(start_date, end_date):
+    for date, shift in sound_shifts(time_data):
         pop = operators.availability[shift]
         weights = [rel_weights[name] for name in pop]
 
@@ -161,9 +169,10 @@ def main():
 
     today = datetime.date.today()
     last_day = datetime.date(2017, 9, 1)
-
+    time_data = TimeData(today, last_day, config['shifts'])
     operators = Operators.fromconfig(config)
-    data, schedule = sound_scheduler(operators, today, last_day)
+
+    data, schedule = sound_scheduler(operators, time_data)
 
     html_table = '\n'.join(add_indent(table(schedule), 2))
     t = Template(boilerplate)
