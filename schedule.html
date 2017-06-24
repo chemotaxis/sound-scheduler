@@ -3,40 +3,69 @@
 <html>
     <head>
         <style>
-            @font-face {
-                font-family: "Overpass";
-                src: url("./Overpass/Overpass-Regular.ttf");
-            }
+            @import url("https://fonts.googleapis.com/css?family=Overpass");
             body {
-                font-family: "Overpass";
-                font-size: 12pt;
+                font-family: "Overpass", sans-serif;
+                font-size: 14pt;
+
             }
+
+            div.title {
+                text-align: center;
+                font-size: 30px;
+                font-weight: bold;
+            }
+            div.body {
+                display: flex;
+                justify-content: space-between;
+            }
+            div.left {
+                width: 30%;
+            }
+            div.right {
+                width: 40%;
+            }
+
             table {
-                width: 50%;
+                width: 100%;
                 /*border: 1px solid;*/
                 border-collapse: collapse;
             }
             tr:nth-child(even) {
                 background-color: #dddddd;
             }
+
+            table.left {
+            }
+
+            table.right {
+            }
+
+            ul {
+                font-size: 12pt;
+            }
+
         </style>
         <meta charset="utf-8">
 
         <title>Woodcrest Sound Schedule</title>
     </head>
     <body>
-		<table>
+        <div class="title">
+            Woodcrest Sound Schedule
+        </div>
+
+        <div class="body">
+        <div class="left">
+		<table class="left">
 			<tr>
-				<td>Jun 21</td><td>Wed</td><td>Kurt</td>
-			</tr>
-			<tr>
-				<td>Jun 25</td><td>Sun AM</td><td>Ethan</td>
+				<td>Jun 25</td><td>Sun AM</td><td>Kurt</td>
 			</tr>
 			<tr>
 				<td>Jun 25</td><td>Sun PM</td><td>Bill</td>
 			</tr>
 			<tr>
-				<td>Jun 28</td><td>Wed</td><td>Troy</td>
+				<td>Jun 28</td><td>Wed</td><td>Ethan</td>
 			</tr>
 			<tr>
 				<td>Jul 02</td><td>Sun AM</td><td>Kurt</td>
@@ -45,80 +74,44 @@
 				<td>Jul 02</td><td>Sun PM</td><td>Troy</td>
 			</tr>
 			<tr>
-				<td>Jul 05</td><td>Wed</td><td>Bill</td>
+				<td>Jul 05</td><td>Wed</td><td>Ethan</td>
 			</tr>
 			<tr>
-				<td>Jul 09</td><td>Sun AM</td><td>Kurt</td>
+				<td>Jul 09</td><td>Sun AM</td><td>Ethan</td>
 			</tr>
 			<tr>
 				<td>Jul 09</td><td>Sun PM</td><td>Troy</td>
 			</tr>
 			<tr>
-				<td>Jul 12</td><td>Wed</td><td>Ethan</td>
+				<td>Jul 12</td><td>Wed</td><td>Bill</td>
 			</tr>
 			<tr>
 				<td>Jul 16</td><td>Sun AM</td><td>Kurt</td>
 			</tr>
-			<tr>
-				<td>Jul 16</td><td>Sun PM</td><td>Bill</td>
+        </table>
+        </div>
+
+        <div class="right">
+        <table class="right">
+            <tr>
+				<td>Ethan</td><td>(111) 111-1111</td>
 			</tr>
-			<tr>
-				<td>Jul 19</td><td>Wed</td><td>Bill</td>
+            <tr>
+				<td>Kurt</td><td>(111) 111-1111</td>
 			</tr>
-			<tr>
-				<td>Jul 23</td><td>Sun AM</td><td>Ethan</td>
+            <tr>
+				<td>Bill</td><td>(111) 111-1111</td>
 			</tr>
-			<tr>
-				<td>Jul 23</td><td>Sun PM</td><td>Troy</td>
+            <tr>
+				<td>Troy</td><td>(111) 111-1111</td>
 			</tr>
-			<tr>
-				<td>Jul 26</td><td>Wed</td><td>Ethan</td>
-			</tr>
-			<tr>
-				<td>Jul 30</td><td>Sun AM</td><td>Ethan</td>
-			</tr>
-			<tr>
-				<td>Jul 30</td><td>Sun PM</td><td>Kurt</td>
-			</tr>
-			<tr>
-				<td>Aug 02</td><td>Wed</td><td>Ethan</td>
-			</tr>
-			<tr>
-				<td>Aug 06</td><td>Sun AM</td><td>Ethan</td>
-			</tr>
-			<tr>
-				<td>Aug 06</td><td>Sun PM</td><td>Troy</td>
-			</tr>
-			<tr>
-				<td>Aug 09</td><td>Wed</td><td>Bill</td>
-			</tr>
-			<tr>
-				<td>Aug 13</td><td>Sun AM</td><td>Ethan</td>
-			</tr>
-			<tr>
-				<td>Aug 13</td><td>Sun PM</td><td>Kurt</td>
-			</tr>
-			<tr>
-				<td>Aug 16</td><td>Wed</td><td>Bill</td>
-			</tr>
-			<tr>
-				<td>Aug 20</td><td>Sun AM</td><td>Ethan</td>
-			</tr>
-			<tr>
-				<td>Aug 20</td><td>Sun PM</td><td>Troy</td>
-			</tr>
-			<tr>
-				<td>Aug 23</td><td>Wed</td><td>Troy</td>
-			</tr>
-			<tr>
-				<td>Aug 27</td><td>Sun AM</td><td>Kurt</td>
-			</tr>
-			<tr>
-				<td>Aug 27</td><td>Sun PM</td><td>Bill</td>
-			</tr>
-			<tr>
-				<td>Aug 30</td><td>Wed</td><td>Kurt</td>
-			</tr>
-		</table>
+        </table>
+
+        <ul>
+            <li>Start recording at Bible reading and continue through the end of the prayer (but not the invitation).</li>
+            <li>If sound board unattended (i.e. special meeting), please cover when available.</li>
+        </ul>
+        </div>
+    </div>
     </body>
 </html>
