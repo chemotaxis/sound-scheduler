@@ -72,6 +72,9 @@ def sound_shifts(time_data):
 def sound_scheduler(operators, time_data):
     """Randomly assign operators to a shift
 
+    the output is a list of strings representing the rows of a table where each
+    row is of the form [date, shift, operator]
+
     To try to maintain a uniform distribution, the algorithm assigns  relative
     weights to each operator.  After every iteration, the relative weights are
     updated so that the last operator picked is less likely to be picked again.
@@ -100,6 +103,7 @@ def sound_scheduler(operators, time_data):
         lo = min(rel_weights.values())
         for k in rel_weights.keys():
             rel_weights[k] //= lo
+
 
         line = [date.strftime('%b %d'), shift, sound_person]
         schedule.append(line)
