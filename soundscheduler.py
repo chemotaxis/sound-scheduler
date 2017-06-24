@@ -5,13 +5,9 @@ import itertools
 from collections import Counter, namedtuple, defaultdict
 from contextlib import contextmanager
 from string import Template
+import argparse
 
-availability = {
-    'Ethan': {'Sun AM', 'Wed'},
-    'Kurt': {'Sun AM', 'Sun PM', 'Wed'},
-    'Troy': {'Sun PM', 'Wed'},
-    'Bill': {'Sun PM', 'Wed'}
-}
+import pytoml as toml
 
 class Operators:
     """Information on sound operators"""
@@ -22,9 +18,18 @@ class Operators:
 
     def __len__(self): return len(self.names)
 
-    def transform_avail(self, d):
+    @classmethod
+    def fromconfig(cls, array):
+        d = {}
+        for operator in array['operators']:
+            k, v = operator['name'], operator['shifts']
+            d[k] = v
+
+        return cls(d)
+
+    def transform_avail(self, old_d):
         d = defaultdict(list)
-        for name, days in availability.items():
+        for name, days in old_d.items():
             for day in days:
                 d[day].append(name)
         return d
@@ -133,12 +138,31 @@ $table
 </html>
 '''
 
+def parse():
+    parser = argparse.ArgumentParser(description='Create a schedule.')
+    parser.add_argument('toml_file', type=str,
+                        help='file path to TOML configuration file')
+    args = parser.parse_args()
+
+    return args
+
+def parse_config(filepath):
+    with open(filepath, 'r') as f:
+        c = toml.load(f)
+
+    return c
+
 def main():
-    operators = Operators(availability)
+    from pprint import pprint
+
+    args = parse()
+    config = parse_config(args.toml_file)
+
 
     today = datetime.date.today()
     last_day = datetime.date(2017, 9, 1)
 
+    operators = Operators.fromconfig(config)
     data, schedule = sound_scheduler(operators, today, last_day)
 
     html_table = '\n'.join(add_indent(table(schedule), 2))
