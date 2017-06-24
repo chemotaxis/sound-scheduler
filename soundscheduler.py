@@ -20,6 +20,8 @@ class Operators:
 
     @classmethod
     def fromconfig(cls, array):
+        """Read an array of tables from TOML"""
+
         d = {}
         for operator in array['operators']:
             k, v = operator['name'], operator['shifts']
@@ -28,21 +30,29 @@ class Operators:
         return cls(d)
 
     def transform_avail(self, old_d):
+        """Transpose the dictionary (swap keys and values)"""
+
         d = defaultdict(list)
         for name, days in old_d.items():
             for day in days:
                 d[day].append(name)
         return d
 
+# Diagnostic is used to to store important variables in order to verify that the
+# relative-weighting of operators is working correctly.
 Diagnostic = namedtuple('Diagnostic',
     ['counts', 'rel_weights', 'shift_counts', 'shift_weights'])
 
+# TimeData is used to hold the dates for the schedule and what shifts are needed
+# on what weekdays.
 TimeData = namedtuple('TimeData', ['first_date', 'last_date', 'shifts'])
 
 def sound_shifts(time_data):
-    """An iterator that emits operating shifts for a given date range"""
+    """An generator that emits operating shifts for a given date range"""
 
     def dates(first, last):
+        """Helper generator to seperate the ordinal date switching"""
+
         first_num, last_num = first.toordinal(), last.toordinal()
         for i in range(first_num, last_num+1):
             yield datetime.date.fromordinal(i)
@@ -52,13 +62,23 @@ def sound_shifts(time_data):
 
         try:
             shifts = time_data.shifts[weekday]
+        # If not correct weekday, go to next weekday
         except KeyError: shifts = []
 
+        # for loop doesn't loop if shifts is an empty list
         for shift in shifts:
             yield full_date, shift
 
 def sound_scheduler(operators, time_data):
-    """Randomly assign operators to a shift"""
+    """Randomly assign operators to a shift
+
+    To try to maintain a uniform distribution, the algorithm assigns  relative
+    weights to each operator.  After every iteration, the relative weights are
+    updated so that the last operator picked is less likely to be picked again.
+    The weights are also scaled after each iteration to keep the weights from
+    growing large.
+
+    """
 
     counts, rel_weights = Counter(), Counter(operators.names)
     schedule, diagnostics = [], []
@@ -66,8 +86,10 @@ def sound_scheduler(operators, time_data):
         pop = operators.availability[shift]
         weights = [rel_weights[name] for name in pop]
 
+        # Used only for tracking variables; not used in algorithm
         diagnostics.append(Diagnostic(counts, rel_weights, pop, weights))
 
+        # *sound_person* is a single string
         sound_person = choices(pop, weights)
         counts.update((sound_person,))
 
@@ -86,6 +108,13 @@ def sound_scheduler(operators, time_data):
     return (counts, diagnostics), schedule
 
 def choices(population, rel_weights):
+    """Randomly pick an item from a list based on the item's relative weight
+
+    *population* is a list of items
+    *rel_weights* is a list of relative weights for each item in *population*
+
+    """
+
     cum_weights = list(itertools.accumulate(rel_weights))
     x = r.random() * cum_weights[-1]
     ix = bisect.bisect(cum_weights, x)
@@ -93,6 +122,14 @@ def choices(population, rel_weights):
 
 @contextmanager
 def tags(name, table, indent_level=0):
+    """Surround with open and closing html tags
+
+    *name* is the tag name
+    *table* is a list of strings that will be concatenated
+    *indent_level* is how many levels to indent the tags
+
+    """
+
     indent = '\t' * indent_level
     table.append('{}<{}>'.format(indent, name))
     yield
@@ -100,9 +137,12 @@ def tags(name, table, indent_level=0):
 
 def table(data, head=[]):
     """Generate an html table
-    data is a list of lists
-    output is a list of strings representing html
+
+    *data* is a list of lists
+    the output is a list of strings representing html table
+
     """
+
     indent = '\t'
     table = []
     with tags('table', table):
