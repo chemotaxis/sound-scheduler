@@ -2,8 +2,7 @@ import datetime
 import random as r
 import bisect
 import itertools
-import collections
-from collections import Counter
+from collections import Counter, namedtuple, defaultdict
 from contextlib import contextmanager
 from string import Template
 
@@ -24,7 +23,7 @@ class Operators:
     def __len__(self): return len(self.names)
 
     def transform_avail(self, d):
-        d = collections.defaultdict(list)
+        d = defaultdict(list)
         for name, days in availability.items():
             for day in days:
                 d[day].append(name)
