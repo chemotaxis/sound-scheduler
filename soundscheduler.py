@@ -29,6 +29,9 @@ class Operators:
                 d[day].append(name)
         return d
 
+Diagnostic = namedtuple('Diagnostic',
+    ['counts', 'rel_weights', 'shift_counts', 'shift_weights'])
+
 def sound_shifts(start_date, end_date):
     """An iterator that emits operating shifts for a given date range"""
     for day in range(start_date.toordinal(), end_date.toordinal()+1):
@@ -44,20 +47,16 @@ def sound_shifts(start_date, end_date):
 def sound_scheduler(operators, start_date, end_date):
     """Randomly assign operators to a shift"""
 
-    counts = Counter()
-    rel_weights = Counter(operators.names)
-    schedule = []
+    counts, rel_weights = Counter(), Counter(operators.names)
+    schedule, diagnostics = [], []
     for date, shift in sound_shifts(start_date, end_date):
         pop = operators.availability[shift]
         weights = [rel_weights[name] for name in pop]
 
-            line = [date.strftime('%b %d'), shift, sound_person]
-            schedule.append(line)
+        diagnostics.append(Diagnostic(counts, rel_weights, pop, weights))
 
         sound_person = choices(pop, weights)
         counts.update((sound_person,))
-
-
 
         diff = set(operators.names) - set((sound_person,))
         for name in diff:
@@ -71,7 +70,7 @@ def sound_scheduler(operators, start_date, end_date):
         schedule.append(line)
 
 
-    return counts, schedule
+    return (counts, diagnostics), schedule
 
 def choices(population, rel_weights):
     cum_weights = list(itertools.accumulate(rel_weights))
@@ -140,7 +139,7 @@ def main():
     today = datetime.date.today()
     last_day = datetime.date(2017, 9, 1)
 
-    counts, schedule = sound_scheduler(operators, today, last_day)
+    data, schedule = sound_scheduler(operators, today, last_day)
 
     html_table = '\n'.join(add_indent(table(schedule), 2))
     t = Template(boilerplate)
