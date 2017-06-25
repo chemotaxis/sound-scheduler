@@ -1,8 +1,44 @@
+# `title` will be used as a heading and as the title of the html file.
+title = "Woodcrest Sound Schedule"
+
+# `notes` is an unordered list of items in the right column.
+notes = [
+    "Start recording at Bible reading and continue through the end of the prayer (but not the invitation).",
+    "If sound board unattended (i.e. special meeting), please cover when available."
+]
+
+# `shifts` are the regular times that the sound system will be used.  Check the
+# spelling of these because this list will be used to verify that the shifts in
+# the operator table are spelled correctly.  It will also be used for display in
+# the final html file.
+[shifts]
+Sunday = ["Sun AM", "Sun PM"]
+Wednesday = ["Wed"]
+
+# `operators` table defines the availability of each operator.  Use the spelling
+# from `shifts` above for specifying `operators.shifts` below.  The array order
+# is maintained.
+[[operators]]
+name = "Pastor Paulson"
+shifts = []
+phone = "111-111-1111"
+
+[[operators]]
+name = "Ethan"
+shifts = ["Sun AM", "Wed"]
+phone = "111-111-1111"
+
+[[operators]]
+name = "Curt"
 shifts = ["Sun AM", "Sun PM", "Wed"]
+phone = "111-111-1111"
 
-[operators]
+[[operators]]
+name = "Troy"
+shifts = ["Sun PM", "Wed"]
+phone = "111-111-1111"
 
-"Ethan" = ["Sun AM", "Wed"]
-"Kurt" = ["Sun AM", "Sun PM", "Wed"]
-"Troy" = ["Sun PM", "Wed"]
-"Bill" = ["Sun PM", "Wed"]
+[[operators]]
+name = "Bill"
+shifts = ["Sun PM", "Wed"]
+phone = "111-111-1111"
