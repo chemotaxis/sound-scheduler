@@ -1,5 +1,5 @@
 import datetime
-import os
+import os, glob
 import random as r
 import bisect
 import itertools
@@ -234,7 +234,10 @@ def main():
     string = ''.join(lines).strip()
     html_template = Template(string)
 
-    filename = 'schedule.html'
+    name = os.path.splitext(args.toml_file)[0] + '-schedule'
+    n = len(glob.glob(name + '*.html'))
+    filename = '{}-{:02}.html'.format(name, n)
+    
     with open(filename, 'w') as f:
         f.write(html_template.substitute(**sub_dict))
         print('{} has been written'.format(filename))
