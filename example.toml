@@ -7,6 +7,10 @@ notes = [
     "If sound board unattended (i.e. special meeting), please cover when available."
 ]
 
+# The date range for the schedule
+start_date = "2017-6-25"
+end_date = "2017-9-01"
+
 # `shifts` are the regular times that the sound system will be used.  Check the
 # spelling of these because this list will be used to verify that the shifts in
 # the operator table are spelled correctly.  It will also be used for display in
