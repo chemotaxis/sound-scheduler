@@ -1,4 +1,5 @@
 import datetime
+import os
 import random as r
 import bisect
 import itertools
@@ -37,6 +38,12 @@ class Operators:
             for day in days:
                 d[day].append(name)
         return d
+
+class Date(datetime.date):
+    @classmethod
+    def fromstring(cls, s, format_string):
+        dt = datetime.datetime.strptime(s, format_string).toordinal()
+        return cls.fromordinal(dt)
 
 # Diagnostic is used to to store important variables in order to verify that the
 # relative-weighting of operators is working correctly.
@@ -139,7 +146,7 @@ def tags(name, table, indent_level=0):
     yield
     table.append('{}</{}>'.format(indent, name))
 
-def table(data, head=[]):
+def create_table(data, head=[]):
     """Generate an html table
 
     *data* is a list of lists
@@ -147,48 +154,17 @@ def table(data, head=[]):
 
     """
 
-    indent = '\t'
+    indent, n_indents = '\t', 5
     table = []
-    with tags('table', table):
-        for row in data:
-            with tags('tr', table, 1):
-                cells = ''.join(['<td>{}</td>'.format(cell) for cell in row])
-                table.append(indent*2 + cells)
+    for row in data:
+        with tags('tr', table, n_indents):
+            cells = ''.join(['<td>{}</td>'.format(cell) for cell in row])
+            table.append(indent*(n_indents+1) + cells)
 
     return table
 
 def add_indent(string_list, level, indent_char='\t'):
     return [indent_char*level + item for item in string_list]
-
-
-boilerplate = '''
-<!DOCTYPE html>
-<html>
-    <head>
-        <style>
-            @import url("https://fonts.googleapis.com/css?family=Overpass");
-            body {
-                font-family: "Overpass", sans-serif;
-                font-size: 12pt;
-            }
-            table {
-                width: 50%;
-                border: 1px solid;
-                border-collapse: collapse;
-            }
-            tr:nth-child(even) {
-                background-color: #dddddd;
-            }
-        </style>
-        <meta charset="utf-8">
-
-        <title>Woodcrest Sound Schedule</title>
-    </head>
-    <body>
-$table
-    </body>
-</html>
-'''
 
 def parse():
     parser = argparse.ArgumentParser(description='Create a schedule.')
@@ -204,26 +180,63 @@ def parse_config(filepath):
 
     return c
 
+class HtmlParts:
+    def __init__(self, schedule_list, config):
+        self.css_file = os.path.join('html-template', 'sound-schedule.css')
+        self.sub_table = {
+            'css': self.css(self.css_file),
+            'title': config['title'],
+            'schedule_table': self.schedule_table(schedule_list),
+            'contacts_table': self.contacts_table(config['operators']),
+            'notes': self.notes(config['notes'])
+        }
+
+    def css(self, filepath):
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+        lines = add_indent(lines, 3)
+        return ''.join(lines).rstrip()
+
+    def schedule_table(self, lines):
+        return '\n'.join(create_table(lines))
+
+    def contacts_table(self, operators):
+        lines = [(op['name'], op['phone']) for op in operators]
+        return '\n'.join(create_table(lines))
+
+    def notes(self, lines):
+        with_tags = ['<li>{}</li>'.format(line) for line in lines]
+        with_tags = add_indent(with_tags, 5)
+        return '\n'.join(with_tags)
+
+
+
 def main():
     from pprint import pprint
 
     args = parse()
     config = parse_config(args.toml_file)
 
-
-    today = datetime.date.today()
-    last_day = datetime.date(2017, 9, 1)
+    # format string example: 2017-01-01
+    f = '%Y-%m-%d'
+    today = Date.fromstring(config['start_date'], f)
+    last_day = Date.fromstring(config['end_date'], f)
     time_data = TimeData(today, last_day, config['shifts'])
     operators = Operators.fromconfig(config)
 
     data, schedule = sound_scheduler(operators, time_data)
 
-    html_table = '\n'.join(add_indent(table(schedule), 2))
-    t = Template(boilerplate)
+    sub_dict = HtmlParts(schedule, config).sub_table
+
+    html_file = os.path.join('html-template', 'sound-schedule.html')
+    with open(html_file, 'r') as f:
+        lines = f.readlines()
+    string = ''.join(lines).strip()
+    html_template = Template(string)
 
     filename = 'schedule.html'
     with open(filename, 'w') as f:
-        f.write(t.substitute(table=html_table))
+        f.write(html_template.substitute(**sub_dict))
         print('{} has been written'.format(filename))
 
 if __name__ == '__main__':

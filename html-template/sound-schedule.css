@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css?family=Overpass");
+
+body {
+    font-family: "Overpass", sans-serif;
+    font-size: 14pt;
+}
+
+div.title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+div.body {
+    display: flex;
+    justify-content: space-between;
+}
+div.left {
+    width: 40%;
+}
+div.right {
+    width: 35%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+table.left {
+}
+
+table.right {
+}
+
+ul {
+    font-size: 12pt;
+}
