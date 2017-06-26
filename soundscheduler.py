@@ -40,6 +40,8 @@ class Operators:
         return d
 
 class Date(datetime.date):
+    """Extend datetime.date to have an additional constructor"""
+
     @classmethod
     def fromstring(cls, s, format_string):
         dt = datetime.datetime.strptime(s, format_string).toordinal()
