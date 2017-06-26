@@ -1,5 +1,5 @@
 import datetime
-import os, glob
+import os, glob, sys
 import random as r
 import bisect
 import itertools
@@ -213,6 +213,13 @@ class HtmlParts:
         return '\n'.join(with_tags)
 
 
+def pyinstaller_dir(filenames):
+    bundle_dir = ''
+    if getattr(sys, 'frozen', False):
+            # we are running in a bundle
+            bundle_dir = sys._MEIPASS
+            sys.path.insert(0,bundle_dir)
+    return [os.path.join(bundle_dir, filename) for filename in filenames]
 
 def main():
     from pprint import pprint
@@ -232,6 +239,7 @@ def main():
     data_dir = 'html-template'
     filenames = ['schedule-template.css', 'schedule-template.html']
     filepaths = [os.path.join(data_dir, fn) for fn in filenames]
+    filepaths = pyinstaller_dir(filepaths)
 
     css_file, html_file = filepaths
 
