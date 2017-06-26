@@ -69,10 +69,12 @@ def sound_shifts(time_data):
     for full_date in dates(time_data.first_date, time_data.last_date):
         weekday = full_date.strftime('%A')
 
+        shifts = []
         try:
             shifts = time_data.shifts[weekday]
-        # If not correct weekday, go to next weekday
-        except KeyError: shifts = []
+        except KeyError:
+            # If not correct weekday, go to next weekday
+            pass
 
         # for loop doesn't loop if shifts is an empty list
         for shift in shifts:
