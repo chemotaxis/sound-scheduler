@@ -182,9 +182,8 @@ def parse_config(filepath):
 
 class HtmlParts:
     def __init__(self, schedule_list, config):
-        self.css_file = os.path.join('html-template', 'sound-schedule.css')
         self.sub_table = {
-            'css': self.css(self.css_file),
+            'css': '',
             'title': config['title'],
             'schedule_table': self.schedule_table(schedule_list),
             'contacts_table': self.contacts_table(config['operators']),
@@ -226,9 +225,16 @@ def main():
 
     data, schedule = sound_scheduler(operators, time_data)
 
-    sub_dict = HtmlParts(schedule, config).sub_table
+    data_dir = 'html-template'
+    filenames = ['schedule-template.css', 'schedule-template.html']
+    filepaths = [os.path.join(data_dir, fn) for fn in filenames]
 
-    html_file = os.path.join('html-template', 'sound-schedule.html')
+    css_file, html_file = filepaths
+
+    html_parts = HtmlParts(schedule, config)
+    sub_dict = html_parts.sub_table
+    sub_dict['css'] =  html_parts.css(css_file)
+
     with open(html_file, 'r') as f:
         lines = f.readlines()
     string = ''.join(lines).strip()
