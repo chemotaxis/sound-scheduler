@@ -2,7 +2,19 @@
 <html>
     <head>
         <style>
-			@import url("https://fonts.googleapis.com/css?family=Overpass");
+			/*Download from Google Fonts if you don't have a copy of the font files.*/
+			/*@import url("https://fonts.googleapis.com/css?family=Overpass");*/
+			
+			@font-face {
+			    font-family: "Overpass";
+			    src: url("html-template/Overpass/Overpass-Regular.ttf");
+			}
+			
+			@font-face {
+			    font-family: "Overpass";
+			    src: url("html-template/Overpass/Overpass-Bold.ttf");
+			    font-weight: bold;
+			}
 			
 			body {
 			    font-family: "Overpass", sans-serif;
@@ -20,10 +32,10 @@
 			    justify-content: space-between;
 			}
 			div.left {
-			    width: 40%;
+			    width: 45%;
 			}
 			div.right {
-			    width: 35%;
+			    width: 40%;
 			}
 			
 			table {
