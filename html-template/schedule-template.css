@@ -1,0 +1,53 @@
+/*Download from Google Fonts if you don't have a copy of the font files.*/
+/*@import url("https://fonts.googleapis.com/css?family=$font_urlify");*/
+
+@font-face {
+    font-family: "$font";
+    src: url("$font_normal");
+}
+
+@font-face {
+    font-family: "$font";
+    src: url("$font_bold");
+    font-weight: bold;
+}
+
+body {
+    font-family: "$font", sans-serif;
+    font-size: 14pt;
+}
+
+div.title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+div.body {
+    display: flex;
+    justify-content: space-between;
+}
+div.left {
+    width: 45%;
+}
+div.right {
+    width: 40%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+table.left {
+}
+
+table.right {
+}
+
+ul {
+    font-size: 12pt;
+}

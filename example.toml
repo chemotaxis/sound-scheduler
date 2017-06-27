@@ -1,11 +1,15 @@
 # `title` will be used as a heading and as the title of the html file.
-title = "Woodcrest Sound Schedule"
+title = "A schedule title"
 
 # `notes` is an unordered list of items in the right column.
 notes = [
-    "Start recording at Bible reading and continue through the end of the prayer (but not the invitation).",
-    "If sound board unattended (i.e. special meeting), please cover when available."
+    "Item 1",
+    "Item 2"
 ]
+
+# The date range for the schedule
+start_date = "2017-6-25"
+end_date = "2017-9-01"
 
 # `shifts` are the regular times that the sound system will be used.  Check the
 # spelling of these because this list will be used to verify that the shifts in
@@ -19,26 +23,21 @@ Wednesday = ["Wed"]
 # from `shifts` above for specifying `operators.shifts` below.  The array order
 # is maintained.
 [[operators]]
-name = "Pastor Paulson"
-shifts = []
-phone = "111-111-1111"
-
-[[operators]]
-name = "Ethan"
-shifts = ["Sun AM", "Wed"]
-phone = "111-111-1111"
-
-[[operators]]
-name = "Curt"
-shifts = ["Sun AM", "Sun PM", "Wed"]
-phone = "111-111-1111"
-
-[[operators]]
-name = "Troy"
-shifts = ["Sun PM", "Wed"]
-phone = "111-111-1111"
-
-[[operators]]
 name = "Bill"
+shifts = []
+phone = "123-456-7890"
+
+[[operators]]
+name = "Bob"
+shifts = ["Sun AM", "Wed"]
+phone = "222-222-2222"
+
+[[operators]]
+name = "Billybob"
+shifts = ["Sun AM", "Sun PM", "Wed"]
+phone = "333-333-3333"
+
+[[operators]]
+name = "Bobby-robert"
 shifts = ["Sun PM", "Wed"]
-phone = "111-111-1111"
+phone = "444-444-4444"

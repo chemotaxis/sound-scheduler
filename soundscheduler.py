@@ -1,4 +1,5 @@
 import datetime
+import os, glob, sys
 import random as r
 import bisect
 import itertools
@@ -38,6 +39,14 @@ class Operators:
                 d[day].append(name)
         return d
 
+class Date(datetime.date):
+    """Extend datetime.date to have an additional constructor"""
+
+    @classmethod
+    def fromstring(cls, s, format_string):
+        dt = datetime.datetime.strptime(s, format_string).toordinal()
+        return cls.fromordinal(dt)
+
 # Diagnostic is used to to store important variables in order to verify that the
 # relative-weighting of operators is working correctly.
 Diagnostic = namedtuple('Diagnostic',
@@ -60,10 +69,12 @@ def sound_shifts(time_data):
     for full_date in dates(time_data.first_date, time_data.last_date):
         weekday = full_date.strftime('%A')
 
+        shifts = []
         try:
             shifts = time_data.shifts[weekday]
-        # If not correct weekday, go to next weekday
-        except KeyError: shifts = []
+        except KeyError:
+            # If not correct weekday, go to next weekday
+            pass
 
         # for loop doesn't loop if shifts is an empty list
         for shift in shifts:
@@ -139,7 +150,7 @@ def tags(name, table, indent_level=0):
     yield
     table.append('{}</{}>'.format(indent, name))
 
-def table(data, head=[]):
+def create_table(data, head=[]):
     """Generate an html table
 
     *data* is a list of lists
@@ -147,48 +158,17 @@ def table(data, head=[]):
 
     """
 
-    indent = '\t'
+    indent, n_indents = '\t', 5
     table = []
-    with tags('table', table):
-        for row in data:
-            with tags('tr', table, 1):
-                cells = ''.join(['<td>{}</td>'.format(cell) for cell in row])
-                table.append(indent*2 + cells)
+    for row in data:
+        with tags('tr', table, n_indents):
+            cells = ''.join(['<td>{}</td>'.format(cell) for cell in row])
+            table.append(indent*(n_indents+1) + cells)
 
     return table
 
 def add_indent(string_list, level, indent_char='\t'):
     return [indent_char*level + item for item in string_list]
-
-
-boilerplate = '''
-<!DOCTYPE html>
-<html>
-    <head>
-        <style>
-            @import url("https://fonts.googleapis.com/css?family=Overpass");
-            body {
-                font-family: "Overpass", sans-serif;
-                font-size: 12pt;
-            }
-            table {
-                width: 50%;
-                border: 1px solid;
-                border-collapse: collapse;
-            }
-            tr:nth-child(even) {
-                background-color: #dddddd;
-            }
-        </style>
-        <meta charset="utf-8">
-
-        <title>Woodcrest Sound Schedule</title>
-    </head>
-    <body>
-$table
-    </body>
-</html>
-'''
 
 def parse():
     parser = argparse.ArgumentParser(description='Create a schedule.')
@@ -204,26 +184,92 @@ def parse_config(filepath):
 
     return c
 
+class HtmlParts:
+    def __init__(self, schedule_list, config):
+        self.sub_table = {
+            'css': '',
+            'title': config['title'],
+            'schedule_table': self.schedule_table(schedule_list),
+            'contacts_table': self.contacts_table(config['operators']),
+            'notes': self.notes(config['notes'])
+        }
+
+    def css(self, filepath):
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+        lines = add_indent(lines, 3)
+        return ''.join(lines).rstrip()
+
+    def schedule_table(self, lines):
+        return '\n'.join(create_table(lines))
+
+    def contacts_table(self, operators):
+        lines = [(op['name'], op['phone']) for op in operators]
+        return '\n'.join(create_table(lines))
+
+    def notes(self, lines):
+        with_tags = ['<li>{}</li>'.format(line) for line in lines]
+        with_tags = add_indent(with_tags, 5)
+        return '\n'.join(with_tags)
+
+
+def pyinstaller_dir(filepaths):
+    bundle_dir = ''
+    if getattr(sys, 'frozen', False):
+            # we are running in a bundle
+            bundle_dir = sys._MEIPASS
+            sys.path.insert(0,bundle_dir)
+    d = {}
+    for k, v in filepaths.items():
+        d[k] = os.path.join(bundle_dir, v)
+    return d
+
 def main():
     from pprint import pprint
 
     args = parse()
     config = parse_config(args.toml_file)
 
-
-    today = datetime.date.today()
-    last_day = datetime.date(2017, 9, 1)
+    # format string example: 2017-01-01
+    f = '%Y-%m-%d'
+    today = Date.fromstring(config['start_date'], f)
+    last_day = Date.fromstring(config['end_date'], f)
     time_data = TimeData(today, last_day, config['shifts'])
     operators = Operators.fromconfig(config)
 
     data, schedule = sound_scheduler(operators, time_data)
 
-    html_table = '\n'.join(add_indent(table(schedule), 2))
-    t = Template(boilerplate)
+    dir_paths = {'data': 'html-template', 'font': 'Overpass'}
+    paths = {
+        'css': ['{data}', 'schedule-template.css'],
+        'html': ['{data}', 'schedule-template.html'],
+        'font_normal': ['{data}', '{font}', '{font}-Regular.ttf'],
+        'font_bold': ['{data}', '{font}', '{font}-Bold.ttf'],
+    }
 
-    filename = 'schedule.html'
+    for k in paths:
+        paths[k] = os.path.join(*paths[k]).format_map(dir_paths)
+    paths.update(dir_paths)
+    paths = pyinstaller_dir(paths)
+
+    html_parts = HtmlParts(schedule, config)
+    sub_dict = html_parts.sub_table
+    css_template = Template(html_parts.css(paths['css']))
+    font_urlify = '{font}'.format_map(paths).replace(' ', '+')
+    sub_dict['css'] =  css_template.substitute(**paths, font_urlify=font_urlify)
+
+    with open(paths['html'], 'r') as f:
+        lines = f.readlines()
+    string = ''.join(lines).strip()
+    html_template = Template(string)
+
+    toml_name = os.path.splitext(args.toml_file)[0]
+    name = toml_name + '-schedule'
+    n = len(glob.glob(name + '*.html'))
+    filename = '{}-{:02}.html'.format(name, n)
+    
     with open(filename, 'w') as f:
-        f.write(t.substitute(table=html_table))
+        f.write(html_template.substitute(**sub_dict))
         print('{} has been written'.format(filename))
 
 if __name__ == '__main__':
