@@ -263,7 +263,8 @@ def main():
     string = ''.join(lines).strip()
     html_template = Template(string)
 
-    name = os.path.splitext(args.toml_file)[0] + '-schedule'
+    toml_name = os.path.splitext(args.toml_file)[0]
+    name = toml_name + '-schedule'
     n = len(glob.glob(name + '*.html'))
     filename = '{}-{:02}.html'.format(name, n)
     
