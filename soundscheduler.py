@@ -213,13 +213,16 @@ class HtmlParts:
         return '\n'.join(with_tags)
 
 
-def pyinstaller_dir(filenames):
+def pyinstaller_dir(filepaths):
     bundle_dir = ''
     if getattr(sys, 'frozen', False):
             # we are running in a bundle
             bundle_dir = sys._MEIPASS
             sys.path.insert(0,bundle_dir)
-    return [os.path.join(bundle_dir, filename) for filename in filenames]
+    d = {}
+    for k, v in filepaths.items():
+        d[k] = os.path.join(bundle_dir, v)
+    return d
 
 def main():
     from pprint import pprint
@@ -236,18 +239,26 @@ def main():
 
     data, schedule = sound_scheduler(operators, time_data)
 
-    data_dir = 'html-template'
-    filenames = ['schedule-template.css', 'schedule-template.html']
-    filepaths = [os.path.join(data_dir, fn) for fn in filenames]
-    filepaths = pyinstaller_dir(filepaths)
+    dir_paths = {'data': 'html-template', 'font': 'Overpass'}
+    paths = {
+        'css': ['{data}', 'schedule-template.css'],
+        'html': ['{data}', 'schedule-template.html'],
+        'font_normal': ['{data}', '{font}', '{font}-Regular.ttf'],
+        'font_bold': ['{data}', '{font}', '{font}-Bold.ttf'],
+    }
 
-    css_file, html_file = filepaths
+    for k in paths:
+        paths[k] = os.path.join(*paths[k]).format_map(dir_paths)
+    paths.update(dir_paths)
+    paths = pyinstaller_dir(paths)
 
     html_parts = HtmlParts(schedule, config)
     sub_dict = html_parts.sub_table
-    sub_dict['css'] =  html_parts.css(css_file)
+    css_template = Template(html_parts.css(paths['css']))
+    font_urlify = '{font}'.format_map(paths).replace(' ', '+')
+    sub_dict['css'] =  css_template.substitute(**paths, font_urlify=font_urlify)
 
-    with open(html_file, 'r') as f:
+    with open(paths['html'], 'r') as f:
         lines = f.readlines()
     string = ''.join(lines).strip()
     html_template = Template(string)

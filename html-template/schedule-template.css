@@ -1,7 +1,19 @@
-@import url("https://fonts.googleapis.com/css?family=Overpass");
+/*Download from Google Fonts if you don't have a copy of the font files.*/
+/*@import url("https://fonts.googleapis.com/css?family=$font_urlify");*/
+
+@font-face {
+    font-family: "$font";
+    src: url("$font_normal");
+}
+
+@font-face {
+    font-family: "$font";
+    src: url("$font_bold");
+    font-weight: bold;
+}
 
 body {
-    font-family: "Overpass", sans-serif;
+    font-family: "$font", sans-serif;
     font-size: 14pt;
 }
 
