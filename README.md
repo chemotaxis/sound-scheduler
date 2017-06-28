@@ -3,8 +3,35 @@
 This is a command line tool to make a printable schedule of people operating the
 sound board for services.
 
-It tries to maintain a uniform distribution between operators over the time
-period of the schedule, but also take into account when people are available.
-For instance, some may be in choir for the morning service.
+## Using Sound Scheduler
 
-I would like to create an html file that can be printed using any browser.
+Sound Scheduler is configured using a TOML file and is required to run Sound Scheduler.  An `example.toml` file is provided for use as a template.  Feel free to copy and rename the `example.toml` file to create custom schedules.
+
+On Mac:
+
+```
+./soundscheduler example.toml
+```
+
+This will create an html schedule in the current directory.
+
+Sound Scheduler will try to use each operator equally over the time period
+given.
+
+
+If you want to run Sound Scheduler from the Python source, you first need to
+install `pytoml`.  Then, run this:
+
+```
+python -m soundscheduler example.toml
+```
+
+## Building Sound Scheduler
+
+If you want to build an executable, install `pyinstaller` as well as `pytoml`.
+
+On Mac:
+
+```
+sh build-soundscheduler.sh
+```
