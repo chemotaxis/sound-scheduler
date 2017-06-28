@@ -1,5 +1,5 @@
 import datetime
-import os, glob, sys
+import os, glob
 import random as r
 import bisect
 import itertools
@@ -212,18 +212,6 @@ class HtmlParts:
         with_tags = add_indent(with_tags, 5)
         return '\n'.join(with_tags)
 
-
-def pyinstaller_dir(filepaths):
-    bundle_dir = ''
-    if getattr(sys, 'frozen', False):
-            # we are running in a bundle
-            bundle_dir = sys._MEIPASS
-            sys.path.insert(0,bundle_dir)
-    d = {}
-    for k, v in filepaths.items():
-        d[k] = os.path.join(bundle_dir, v)
-    return d
-
 def main():
     from pprint import pprint
 
@@ -250,7 +238,6 @@ def main():
     for k in paths:
         paths[k] = os.path.join(*paths[k]).format_map(dir_paths)
     paths.update(dir_paths)
-    paths = pyinstaller_dir(paths)
 
     html_parts = HtmlParts(schedule, config)
     sub_dict = html_parts.sub_table
@@ -267,7 +254,7 @@ def main():
     name = toml_name + '-schedule'
     n = len(glob.glob(name + '*.html'))
     filename = '{}-{:02}.html'.format(name, n)
-    
+
     with open(filename, 'w') as f:
         f.write(html_template.substitute(**sub_dict))
         print('{} has been written'.format(filename))
