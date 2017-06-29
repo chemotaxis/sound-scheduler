@@ -10,6 +10,9 @@ import argparse
 
 import pytoml as toml
 
+PROG_NAME = 'soundscheduler'
+__version__ = '0.1.0'
+
 class Operators:
     """Information on sound operators"""
 
@@ -172,8 +175,13 @@ def add_indent(string_list, level, indent_char='\t'):
 
 def parse():
     parser = argparse.ArgumentParser(description='Create a schedule.')
-    parser.add_argument('toml_file', type=str,
-                        help='file path to TOML configuration file')
+    parser.add_argument('toml_file',
+        type=str,
+        help='file path to TOML configuration file')
+    parser.add_argument('--version',
+        action='version', version='{} {}'.format(PROG_NAME, __version__),
+        help='show program\'s name and version number')
+
     args = parser.parse_args()
 
     return args
@@ -244,6 +252,7 @@ def main():
     css_template = Template(html_parts.css(paths['css']))
     font_urlify = '{font}'.format_map(paths).replace(' ', '+')
     sub_dict['css'] =  css_template.substitute(**paths, font_urlify=font_urlify)
+    sub_dict['version'] = '{} {}'.format(PROG_NAME, __version__)
 
     with open(paths['html'], 'r') as f:
         lines = f.readlines()
