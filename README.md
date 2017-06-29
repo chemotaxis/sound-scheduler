@@ -18,6 +18,12 @@ This will create an html schedule in the current directory.
 Sound Scheduler will try to use each operator equally over the time period
 given.
 
+For additional help:
+
+```
+./soundscheduler --help
+```
+
 
 If you want to run Sound Scheduler from the Python source, you first need to
 install `pytoml`.  Then, run this:
