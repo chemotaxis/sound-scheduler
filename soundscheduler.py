@@ -221,7 +221,6 @@ class HtmlParts:
         return '\n'.join(with_tags)
 
 def main():
-    from pprint import pprint
 
     args = parse()
     config = parse_config(args.toml_file)
