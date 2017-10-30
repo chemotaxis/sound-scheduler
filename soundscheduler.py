@@ -28,8 +28,9 @@ class Operators:
 
         d = {}
         for operator in array['operators']:
-            k, v = operator['name'], operator['shifts']
-            d[k] = v
+            name, shifts = operator['name'], operator['shifts']
+            if shifts:
+                d[name] = shifts
 
         return cls(d)
 
