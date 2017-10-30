@@ -13,12 +13,16 @@ import pytoml as toml
 PROG_NAME = 'soundscheduler'
 __version__ = '0.1.0'
 
+# format string example: 2017-01-01
+DATE_FORMAT = '%Y-%m-%d'
+
 class Operators:
     """Information on sound operators"""
 
-    def __init__(self, avail):
+    def __init__(self, avail, exceptions):
         self.availability = self.transform_avail(avail)
         self.names = list(avail.keys())
+        self.exceptions = exceptions
 
     def __len__(self): return len(self.names)
 
@@ -26,13 +30,38 @@ class Operators:
     def fromconfig(cls, array):
         """Read an array of tables from TOML"""
 
-        d = {}
+        def read_exceptions(operator):
+            exceptions = set()
+            try:
+                exceptions = operator['exceptions']
+            except KeyError:
+                # operator does not have an exception
+                return exceptions
+            
+            new_e = set()
+            for exception in exceptions:
+                if len(exception) > 1:
+                    new_e.add(tuple(exception))
+                else:
+                    date = exception[0]
+                    weekday = Date.fromstring(date, DATE_FORMAT).strftime('%A')
+                    shifts = array['shifts'][weekday]
+                    for shift in shifts:
+                        new_e.add((date, shift))
+            exceptions = new_e
+            return exceptions
+
+        d, e = {}, defaultdict(set)
         for operator in array['operators']:
             name, shifts = operator['name'], operator['shifts']
             if shifts:
                 d[name] = shifts
 
-        return cls(d)
+            exceptions = read_exceptions(operator)
+            for exception in exceptions:
+                e[exception].add(name)
+
+        return cls(d, e)
 
     def transform_avail(self, old_d):
         """Transpose the dictionary (swap keys and values)"""
@@ -97,15 +126,21 @@ def sound_scheduler(operators, time_data):
     growing large.
 
     """
-
     counts, rel_weights = Counter(), Counter(operators.names)
     schedule, diagnostics = [], []
     for date, shift in sound_shifts(time_data):
         pop = operators.availability[shift]
+        k = (date.strftime(DATE_FORMAT), shift)
+
+        if k in operators.exceptions:
+            pop = set(pop) - operators.exceptions[k]
+            pop = list(pop)
+
         weights = [rel_weights[name] for name in pop]
 
         # Used only for tracking variables; not used in algorithm
-        diagnostics.append(Diagnostic(counts, rel_weights, pop, weights))
+        diagnostics.append(
+            Diagnostic(counts.copy(), rel_weights.copy(), pop, weights))
 
         # *sound_person* is a single string
         sound_person = choices(pop, weights)
@@ -226,10 +261,8 @@ def main():
     args = parse()
     config = parse_config(args.toml_file)
 
-    # format string example: 2017-01-01
-    f = '%Y-%m-%d'
-    today = Date.fromstring(config['start_date'], f)
-    last_day = Date.fromstring(config['end_date'], f)
+    today = Date.fromstring(config['start_date'], DATE_FORMAT)
+    last_day = Date.fromstring(config['end_date'], DATE_FORMAT)
     time_data = TimeData(today, last_day, config['shifts'])
     operators = Operators.fromconfig(config)
 
