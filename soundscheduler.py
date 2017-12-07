@@ -288,7 +288,7 @@ def main(args):
         'css': ['{data}', 'schedule-template.css'],
         'html': ['{data}', 'schedule-template.html'],
         'font_normal': ['{data}', '{font}', '{font}-Regular.ttf'],
-        'font_bold': ['{data}', '{font}', '{font}-Bold.ttf'],
+        'font_bold': ['{data}', '{font}', '{font}-ExtraBold.ttf'],
     }
 
     # convert lists to file paths

@@ -4,7 +4,7 @@ Sound Scheduler
 0.2.0
 -----
 
-* Add tests
+* Change bold font to extra-bold font
 * Fix scaling problem
 * Add date exceptions for each operator
 
