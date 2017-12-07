@@ -217,6 +217,9 @@ def parse():
     parser.add_argument('--version',
         action='version', version='{} {}'.format(PROG_NAME, __version__),
         help='show program\'s name and version number')
+    parser.add_argument('-n',
+        type=int, default=1,
+        help='number of schedules to create')
 
     args = parser.parse_args()
 
@@ -302,4 +305,6 @@ def main():
         print('{} has been written'.format(filename))
 
 if __name__ == '__main__':
-    main()
+    args = parse()
+    for _ in range(args.n):
+        main(args)
