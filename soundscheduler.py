@@ -13,12 +13,16 @@ import pytoml as toml
 PROG_NAME = 'soundscheduler'
 __version__ = '0.1.0'
 
+# format string example: 2017-01-01
+DATE_FORMAT = '%Y-%m-%d'
+
 class Operators:
     """Information on sound operators"""
 
-    def __init__(self, avail):
+    def __init__(self, avail, exceptions):
         self.availability = self.transform_avail(avail)
         self.names = list(avail.keys())
+        self.exceptions = exceptions
 
     def __len__(self): return len(self.names)
 
@@ -26,12 +30,47 @@ class Operators:
     def fromconfig(cls, array):
         """Read an array of tables from TOML"""
 
-        d = {}
-        for operator in array['operators']:
-            k, v = operator['name'], operator['shifts']
-            d[k] = v
+        def read_exceptions(operator):
+            """Specify date exceptions for individual operators
 
-        return cls(d)
+            You can enumerate which shifts are not available by doing this:
+                [date, shift]
+
+            Or specify that the whole day is unavailable:
+                [date]
+            """
+            exceptions = set()
+            try:
+                exceptions = operator['exceptions']
+            except KeyError:
+                # operator does not have an exception
+                return exceptions
+            
+            new_e = set()
+            for exception in exceptions:
+                if len(exception) > 1:
+                    new_e.add(tuple(exception))
+                else:
+                    # whole day is an exception; therefore add all shifts
+                    date = exception[0]
+                    weekday = Date.fromstring(date, DATE_FORMAT).strftime('%A')
+                    shifts = array['shifts'][weekday]
+                    for shift in shifts:
+                        new_e.add((date, shift))
+            exceptions = new_e
+            return exceptions
+
+        d, e = {}, defaultdict(set)
+        for operator in array['operators']:
+            name, shifts = operator['name'], operator['shifts']
+            if shifts:
+                d[name] = shifts
+
+            exceptions = read_exceptions(operator)
+            for exception in exceptions:
+                e[exception].add(name)
+
+        return cls(d, e)
 
     def transform_avail(self, old_d):
         """Transpose the dictionary (swap keys and values)"""
@@ -96,15 +135,21 @@ def sound_scheduler(operators, time_data):
     growing large.
 
     """
-
     counts, rel_weights = Counter(), Counter(operators.names)
     schedule, diagnostics = [], []
     for date, shift in sound_shifts(time_data):
         pop = operators.availability[shift]
+        k = (date.strftime(DATE_FORMAT), shift)
+
+        if k in operators.exceptions:
+            pop = set(pop) - operators.exceptions[k]
+            pop = list(pop)
+
         weights = [rel_weights[name] for name in pop]
 
         # Used only for tracking variables; not used in algorithm
-        diagnostics.append(Diagnostic(counts, rel_weights, pop, weights))
+        diagnostics.append(
+            Diagnostic(counts.copy(), rel_weights.copy(), pop, weights))
 
         # *sound_person* is a single string
         sound_person = choices(pop, weights)
@@ -181,6 +226,9 @@ def parse():
     parser.add_argument('--version',
         action='version', version='{} {}'.format(PROG_NAME, __version__),
         help='show program\'s name and version number')
+    parser.add_argument('-n',
+        type=int, default=1,
+        help='number of schedules to create')
 
     args = parser.parse_args()
 
@@ -193,6 +241,11 @@ def parse_config(filepath):
     return c
 
 class HtmlParts:
+    """Combine all parts into properly formatted html and css
+
+    Mainly adds newline characters and a couple indents
+    """
+    
     def __init__(self, schedule_list, config):
         self.sub_table = {
             'css': '',
@@ -220,15 +273,11 @@ class HtmlParts:
         with_tags = add_indent(with_tags, 5)
         return '\n'.join(with_tags)
 
-def main():
-
-    args = parse()
+def main(args):
     config = parse_config(args.toml_file)
 
-    # format string example: 2017-01-01
-    f = '%Y-%m-%d'
-    today = Date.fromstring(config['start_date'], f)
-    last_day = Date.fromstring(config['end_date'], f)
+    today = Date.fromstring(config['start_date'], DATE_FORMAT)
+    last_day = Date.fromstring(config['end_date'], DATE_FORMAT)
     time_data = TimeData(today, last_day, config['shifts'])
     operators = Operators.fromconfig(config)
 
@@ -242,6 +291,7 @@ def main():
         'font_bold': ['{data}', '{font}', '{font}-Bold.ttf'],
     }
 
+    # convert lists to file paths
     for k in paths:
         paths[k] = os.path.join(*paths[k]).format_map(dir_paths)
     paths.update(dir_paths)
@@ -250,7 +300,7 @@ def main():
     sub_dict = html_parts.sub_table
     css_template = Template(html_parts.css(paths['css']))
     font_urlify = '{font}'.format_map(paths).replace(' ', '+')
-    sub_dict['css'] =  css_template.substitute(**paths, font_urlify=font_urlify)
+    sub_dict['css'] = css_template.substitute(**paths, font_urlify=font_urlify)
     sub_dict['version'] = '{} {}'.format(PROG_NAME, __version__)
 
     with open(paths['html'], 'r') as f:
@@ -268,4 +318,6 @@ def main():
         print('{} has been written'.format(filename))
 
 if __name__ == '__main__':
-    main()
+    args = parse()
+    for _ in range(args.n):
+        main(args)
