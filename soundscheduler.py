@@ -31,6 +31,14 @@ class Operators:
         """Read an array of tables from TOML"""
 
         def read_exceptions(operator):
+            """Specify date exceptions for individual operators
+
+            You can enumerate which shifts are not available by doing this:
+                [date, shift]
+
+            Or specify that the whole day is unavailable:
+                [date]
+            """
             exceptions = set()
             try:
                 exceptions = operator['exceptions']
@@ -43,6 +51,7 @@ class Operators:
                 if len(exception) > 1:
                     new_e.add(tuple(exception))
                 else:
+                    # whole day is an exception; therefore add all shifts
                     date = exception[0]
                     weekday = Date.fromstring(date, DATE_FORMAT).strftime('%A')
                     shifts = array['shifts'][weekday]
@@ -232,6 +241,11 @@ def parse_config(filepath):
     return c
 
 class HtmlParts:
+    """Combine all parts into properly formatted html and css
+
+    Mainly adds newline characters and a couple indents
+    """
+    
     def __init__(self, schedule_list, config):
         self.sub_table = {
             'css': '',
@@ -259,9 +273,7 @@ class HtmlParts:
         with_tags = add_indent(with_tags, 5)
         return '\n'.join(with_tags)
 
-def main():
-
-    args = parse()
+def main(args):
     config = parse_config(args.toml_file)
 
     today = Date.fromstring(config['start_date'], DATE_FORMAT)
@@ -279,6 +291,7 @@ def main():
         'font_bold': ['{data}', '{font}', '{font}-Bold.ttf'],
     }
 
+    # convert lists to file paths
     for k in paths:
         paths[k] = os.path.join(*paths[k]).format_map(dir_paths)
     paths.update(dir_paths)
@@ -287,7 +300,7 @@ def main():
     sub_dict = html_parts.sub_table
     css_template = Template(html_parts.css(paths['css']))
     font_urlify = '{font}'.format_map(paths).replace(' ', '+')
-    sub_dict['css'] =  css_template.substitute(**paths, font_urlify=font_urlify)
+    sub_dict['css'] = css_template.substitute(**paths, font_urlify=font_urlify)
     sub_dict['version'] = '{} {}'.format(PROG_NAME, __version__)
 
     with open(paths['html'], 'r') as f:
