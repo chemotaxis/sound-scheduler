@@ -326,7 +326,7 @@ def main(args):
     html_template = Template(string)
 
     toml_name = os.path.splitext(args.toml_file)[0]
-    name = toml_name + '-schedule'
+    name = toml_name + '-schedule' + '-{}'.format(today.strftime('%Y%m%d'))
     n = len(glob.glob(name + '*.html'))
     filename = '{}-{:02}.html'.format(name, n)
 
