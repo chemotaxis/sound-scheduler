@@ -137,6 +137,7 @@ def sound_scheduler(operators, time_data):
     """
     counts, rel_weights = Counter(), Counter(operators.names)
     schedule, diagnostics = [], []
+    last_person = ''
     for date, shift in sound_shifts(time_data):
         pop = operators.availability[shift]
         k = (date.strftime(DATE_FORMAT), shift)
@@ -145,6 +146,8 @@ def sound_scheduler(operators, time_data):
             pop = set(pop) - operators.exceptions[k]
             pop = list(pop)
 
+        if len(pop) > 1:
+            pop = list(set(pop) - set([last_person]))
         weights = [rel_weights[name] for name in pop]
 
         # Used only for tracking variables; not used in algorithm
@@ -153,6 +156,7 @@ def sound_scheduler(operators, time_data):
 
         # *sound_person* is a single string
         sound_person = choices(pop, weights)
+        last_person = sound_person
         counts.update((sound_person,))
 
         diff = set(operators.names) - set((sound_person,))
