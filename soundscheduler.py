@@ -43,9 +43,9 @@ class Operators:
             try:
                 exceptions = operator['exceptions']
             except KeyError:
-                # operator does not have an exception
+                # operator does not have an exception, so return empty set
                 return exceptions
-            
+
             new_e = set()
             for exception in exceptions:
                 if len(exception) > 1:
