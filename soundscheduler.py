@@ -233,6 +233,10 @@ def parse():
     parser.add_argument('-n',
         type=int, default=1,
         help='number of schedules to create')
+    parser.add_argument('--no-print',
+        type=bool, default=False, dest='no_print',
+        help="Don't output html file"
+    )
 
     args = parser.parse_args()
 
@@ -325,6 +329,8 @@ def main(args):
     name = toml_name + '-schedule'
     n = len(glob.glob(name + '*.html'))
     filename = '{}-{:02}.html'.format(name, n)
+
+    if args.no_print: return
 
     with open(filename, 'w') as f:
         f.write(html_template.substitute(**sub_dict))
