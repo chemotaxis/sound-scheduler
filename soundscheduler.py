@@ -245,15 +245,23 @@ class HtmlParts:
 
     Mainly adds newline characters and a couple indents
     """
-    
+
     def __init__(self, schedule_list, config):
         self.sub_table = {
             'css': '',
             'title': config['title'],
+            'subtitle': '',
             'schedule_table': self.schedule_table(schedule_list),
             'contacts_table': self.contacts_table(config['operators']),
             'notes': self.notes(config['notes'])
         }
+
+    @staticmethod
+    def add_year(start, end):
+        year = str(start)
+        if start != end:
+            year = '/'.join(map(str, [start, end]))
+        return year
 
     def css(self, filepath):
         with open(filepath, 'r') as f:
@@ -298,6 +306,7 @@ def main(args):
 
     html_parts = HtmlParts(schedule, config)
     sub_dict = html_parts.sub_table
+    sub_dict['subtitle'] = html_parts.add_year(today.year, last_day.year)
     css_template = Template(html_parts.css(paths['css']))
     font_urlify = '{font}'.format_map(paths).replace(' ', '+')
     sub_dict['css'] = css_template.substitute(**paths, font_urlify=font_urlify)
