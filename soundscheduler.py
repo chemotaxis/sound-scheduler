@@ -1,5 +1,6 @@
 import datetime
-import os, glob
+import os
+import glob
 import random as r
 import bisect
 import itertools
@@ -15,6 +16,7 @@ __version__ = '0.1.0'
 
 # format string example: 2017-01-01
 DATE_FORMAT = '%Y-%m-%d'
+
 
 class Operators:
     """Information on sound operators"""
@@ -81,6 +83,7 @@ class Operators:
                 d[day].append(name)
         return d
 
+
 class Date(datetime.date):
     """Extend datetime.date to have an additional constructor"""
 
@@ -89,14 +92,16 @@ class Date(datetime.date):
         dt = datetime.datetime.strptime(s, format_string).toordinal()
         return cls.fromordinal(dt)
 
+
 # Diagnostic is used to to store important variables in order to verify that the
 # relative-weighting of operators is working correctly.
 Diagnostic = namedtuple('Diagnostic',
-    ['counts', 'rel_weights', 'shift_counts', 'shift_weights'])
+                        ['counts', 'rel_weights', 'shift_counts', 'shift_weights'])
 
 # TimeData is used to hold the dates for the schedule and what shifts are needed
 # on what weekdays.
 TimeData = namedtuple('TimeData', ['first_date', 'last_date', 'shifts'])
+
 
 def sound_shifts(time_data):
     """An generator that emits operating shifts for a given date range"""
@@ -121,6 +126,7 @@ def sound_shifts(time_data):
         # for loop doesn't loop if shifts is an empty list
         for shift in shifts:
             yield full_date, shift
+
 
 def sound_scheduler(operators, time_data):
     """Randomly assign operators to a shift
@@ -167,12 +173,11 @@ def sound_scheduler(operators, time_data):
         for k in rel_weights.keys():
             rel_weights[k] //= lo
 
-
         line = [date.strftime('%b %d'), shift, sound_person]
         schedule.append(line)
 
-
     return (counts, diagnostics), schedule
+
 
 def choices(population, rel_weights):
     """Randomly pick an item from a list based on the item's relative weight
@@ -186,6 +191,7 @@ def choices(population, rel_weights):
     x = r.random() * cum_weights[-1]
     ix = bisect.bisect(cum_weights, x)
     return population[ix]
+
 
 @contextmanager
 def tags(name, table, indent_level=0):
@@ -201,6 +207,7 @@ def tags(name, table, indent_level=0):
     table.append('{}<{}>'.format(indent, name))
     yield
     table.append('{}</{}>'.format(indent, name))
+
 
 def create_table(data, head=[]):
     """Generate an html table
@@ -219,34 +226,38 @@ def create_table(data, head=[]):
 
     return table
 
+
 def add_indent(string_list, level, indent_char='\t'):
     return [indent_char*level + item for item in string_list]
+
 
 def parse():
     parser = argparse.ArgumentParser(description='Create a schedule.')
     parser.add_argument('toml_file',
-        type=str,
-        help='file path to TOML configuration file')
+                        type=str,
+                        help='file path to TOML configuration file')
     parser.add_argument('--version',
-        action='version', version='{} {}'.format(PROG_NAME, __version__),
-        help='show program\'s name and version number')
+                        action='version', version='{} {}'.format(PROG_NAME, __version__),
+                        help='show program\'s name and version number')
     parser.add_argument('-n',
-        type=int, default=1,
-        help='number of schedules to create')
+                        type=int, default=1,
+                        help='number of schedules to create')
     parser.add_argument('--no-print',
-        type=bool, default=False, dest='no_print',
-        help="Don't output html file"
-    )
+                        type=bool, default=False, dest='no_print',
+                        help="Don't output html file"
+                        )
 
     args = parser.parse_args()
 
     return args
+
 
 def parse_config(filepath):
     with open(filepath, 'r') as f:
         c = toml.load(f)
 
     return c
+
 
 class HtmlParts:
     """Combine all parts into properly formatted html and css
@@ -289,6 +300,7 @@ class HtmlParts:
         with_tags = add_indent(with_tags, 5)
         return '\n'.join(with_tags)
 
+
 def main(args):
     config = parse_config(args.toml_file)
 
@@ -330,11 +342,13 @@ def main(args):
     n = len(glob.glob(name + '*.html'))
     filename = '{}-{:02}.html'.format(name, n)
 
-    if args.no_print: return
+    if args.no_print:
+        return
 
     with open(filename, 'w') as f:
         f.write(html_template.substitute(**sub_dict))
         print('{} has been written'.format(filename))
+
 
 if __name__ == '__main__':
     args = parse()
