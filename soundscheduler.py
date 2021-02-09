@@ -12,7 +12,7 @@ import argparse
 import pytoml as toml
 
 PROG_NAME = 'soundscheduler'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 # format string example: 2017-01-01
 DATE_FORMAT = '%Y-%m-%d'
